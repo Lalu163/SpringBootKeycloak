@@ -12,6 +12,8 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimNames;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 @Component
@@ -33,7 +35,8 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
          .concat(jwtGrantedAuthoritiesConverter.convert(jwt).stream(), extractResourceRoles(jwt).stream())
          .toList();
 
-        return null;
+        return new JwtAuthenticationToken(jwt, authorities, getPrincipleName(jwt));
+
     }
 
     private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt){
@@ -62,5 +65,15 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
         return resourceRoles.stream()
             .map(role -> new SimpleGrantedAuthority("ROLE_".concat(role)))
             .toList();
+    }
+
+    private String getPrincipleName(Jwt jwt){
+        String claimName = JwtClaimNames.SUB;
+
+        if(principleAtribute != null){
+            claimName = principleAtribute;
+        }
+
+        return jwt.getClaim(claimName);
     }
 }
