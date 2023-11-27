@@ -1,5 +1,6 @@
 package com.api.rest.springbootkeycloak.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -8,10 +9,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    @Autowired
+    private JwtAuthenticationConverter jwtAuthenticationConverter;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
@@ -19,7 +26,7 @@ public class SecurityConfig {
             .csrf(csfr -> csfr.disable())
             .authorizeHttpRequests(http -> http.anyRequest().authenticated())
             .oauth2ResourceServer(oauth -> {
-                oauth.jwt(jwt -> {});
+                oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter));
             })
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .build();
